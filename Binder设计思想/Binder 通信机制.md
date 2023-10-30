@@ -275,8 +275,6 @@ Binder 是基于**内存映射(mmap)**实现的，内存映射通常是用在有
 
 <img src="https://cdn.nlark.com/yuque/0/2023/jpeg/375694/1696841638261-ade2f0a5-4a45-4b5f-b6ed-13f23c26f53d.jpeg" alt="img" style="zoom:50%;" />
 
-1. binder 驱动会在.
-
 
 
 ### Binder 是如何创建的?

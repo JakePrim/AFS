@@ -12,6 +12,12 @@
 
 - 《bindService如何跨进程传递binder》
 
+  
+
+  
+
+### Native Binder
+
 - 《系统服务的注册过程》
 
 - 《系统服务的获取过程》
@@ -19,14 +25,6 @@
 - 《ServiceManager的启动过程》
 
 - 《ServiceManager的Binder机制》
-
-  
-
-
-
-### Native Binder
-
-
 
 
 
@@ -38,7 +36,7 @@
 
 
 
-### 跨进程实战
+### 跨进程通信实战
 
 
 
