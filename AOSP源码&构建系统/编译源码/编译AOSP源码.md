@@ -1,135 +1,385 @@
 # 编译AOSP源码
 
-在Ubuntu里面新建一个enviroment.sh脚本，将以下内容复制进去
+## 硬件环境
 
-```
-#base tools of ubuntu
-sudo apt install net-tools gitk tree vim terminator synergy expect minicom cutecom 
-#openjdk
-sudo apt-get install openjdk-8-jdk 
-sudo apt-get install git-core gnupg flex bison gperf build-essential zip curl zlib1g-dev gcc-multilib g++-multilib libc6-dev-i386 lib32ncurses5-dev x11proto-core-dev libx11-dev lib32z-dev libgl1-mesa-dev libxml2-utils xsltproc unzip libc6-dev tofrodos python3-markdown libssl-dev libxml-simple-perl  mingw-w64
-#install adb and fastboot
-sudo apt-get install android-tools-adb android-tools-fastboot
-#install ssh server in order to enable ssh login and scp
-sudo apt-get install openssh-server openssh-client
-#install python
-sudo apt-get install python python-dev python-protobuf protobuf-compiler python-virtualenv python-pip
-#install libssl-dev to fix such error "fatal error: openssl/opensslv.h: No such file or directory"
-sudo apt-get install libssl-dev
-#install audit2allow
-sudo apt-get install policycoreutils-python-utils
-sudo apt-get install m4
-#安装perl环境，否则可能会报错Can't locate XML/Simple.pm in @INC (you may need to install the XML::Simple module)
-sudo cpan install XML::Simple
-#解决no such file or directory以及Cannot generate supplementary makefiles的问题
-sudo apt install lsb
-sudo apt-get install lib32stdc++6
-sudo apt-get install ia32-libs
-sudo apt-get install lib32ncurses5
-sudo apt-get install lib32z1
+AOSP 的下载、编译理论上支持 Mac和Linux，但是不建议在非 Linux 环境下尝试编译，其中要踩的坑实在太多。
 
-sudo chmod 777 enviroment.sh
-```
-运行脚本会自动下载安装所需环境，但因为Ubuntu默认的软件仓库地址在国内可能会方便比较慢，甚至会失败的情况，所以运行脚本前需要先设置一下软件仓库镜像源。
-```
-sudo gedit /etc/apt/sources.list 
+下载 Android 12 及以后的版本，需要至少100GB的硬盘空间，编译Android 12 则需要300GB的硬盘空间和16GB以上的内存，低于这个配置在编译时大概率会报错。我的硬件环境如下：Ubuntu 20.0.4版本的系统
 
-```
-打开镜像源文件，替换以下内容：
-```
-#添加阿里源
-deb http://mirrors.aliyun.com/ubuntu/ focal main restricted universe multiverse
-deb-src http://mirrors.aliyun.com/ubuntu/ focal main restricted universe multiverse
-deb http://mirrors.aliyun.com/ubuntu/ focal-security main restricted universe multiverse
-deb-src http://mirrors.aliyun.com/ubuntu/ focal-security main restricted universe multiverse
-deb http://mirrors.aliyun.com/ubuntu/ focal-updates main restricted universe multiverse
-deb-src http://mirrors.aliyun.com/ubuntu/ focal-updates main restricted universe multiverse
-deb http://mirrors.aliyun.com/ubuntu/ focal-proposed main restricted universe multiverse
-deb-src http://mirrors.aliyun.com/ubuntu/ focal-proposed main restricted universe multiverse
-deb http://mirrors.aliyun.com/ubuntu/ focal-backports main restricted universe multiverse
-deb-src http://mirrors.aliyun.com/ubuntu/ focal-backports main restricted universe multiverse
-#添加清华源
-deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ focal main restricted universe multiverse
-deb-src https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ focal main restricted universe multiverse
-deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ focal-updates main restricted universe multiverse
-deb-src https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ focal-updates main restricted universe multiverse
-deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ focal-backports main restricted universe multiverse
-deb-src https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ focal-backports main restricted universe multiverse
-deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ focal-security main restricted universe multiverse
-deb-src https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ focal-security main restricted universe multiverse multiverse
+![image-20231103134507171](./%E7%BC%96%E8%AF%91AOSP%E6%BA%90%E7%A0%81.assets/image-20231103134507171.png)
 
-```
-替换完后，执行
-```
-sudo apt-get update
-sudo apt-get -f install
-sudo apt-get upgrade
-```
-更新完仓库地址之后再执行上面的脚本即可，安装过程中需要手动选择y确认安装，安装过程大概需要15分钟。
+## 源码管理工具
+
+安装完Ubuntu系统后，在下载Android源码之前，要先安装其构建工具 Repo 来初始化源码。Repo是Android用来辅助Git工作的一个工具。(Repo命令的详解在下一篇文章中讲解)
+
+### Repo
+
+#### Repo 简介
+
+Repo是Google使用python脚本编写的用于调用Git的脚本，主要用来下载、管理Android项目的软件仓库。
+
+Repo不会取代Git，但是它可以让开发者在Android环境中更加轻松的使用Git。
+
+在大多数情况下，确实可以仅使用 Git（不必使用 Repo），或结合使用 Repo 和 Git 命令以组成复杂的命令。不过，使用 Repo 执行基本的跨网络操作可大大简化我们的工作。
+
+#### 安装 Repo
 
 Android源码同时使用git和repo进行管理，repo是基于git的代码管理工具，类似github、gitee，所以需要同时安装git和repo
+
 ```
 sudo apt-get update
 sudo apt-get install repo
 ```
-如果是ubuntu20.04，执行上述命令会提示无法定位repo包，那么这个时候需要手动安装repo
-```
-curl https://storage.googleapis.com/git-repo-downloads/repo > ~/bin/repo
-chmod a+x ~/bin/repo
-export PATH=~/bin:$PATH
-```
+
 如果没有~/bin/repo目录，需要先创建一下，安装好后验证是否安装成功
-```
-repo verison
 
 ```
+repo verison
+```
+
 如果出现
+
 ```
 <repo not installed>
 repo launcher version 2.15
 (from /usr/bin/repo)
 ```
+
 说明安装成功了，repo安装好后可以开始下载源码了
 
-首先需要创建一个文件夹来存放源码
-```
-sudo mkdir /projects/Google-Android-Source/
-sudo chmod 777 /projects/Google-Android-Source/
-```
-当然使用git还需要设置一下git全局配置
-```
-git config --global user.name "jason"
-git config --global user.email "jason@163.com"
-repo init -u git://mirrors.ustc.edu.cn/aosp/platform/manifest   #初始化仓库
+第 1 步，创建一个bin目录，并将这个目录添加到系统的环境变量中
 
-#这里使用的是清华源，并且是master主干分支。
-#google源是repo init -u https://android.googlesource.com/platform/manifest 需要FQ
-#可以使用-b指定分支，比如：
-repo init -u git://mirrors.ustc.edu.cn/aosp/platform/manifest -b android-10.0.0_r1
-#查看所有分支地址：https://android.googlesource.com/platform/manifest/+refs
-repo sync #这句话实际下载路径就是上面repo init时指定的路径。
-
-#下载时间比较长，主要看网络给不给力了
-#最后看到repo sync has finished successfully.表示下载完成。
-#最新源代码android11大小约124G。。。
-```
-##### 查看并切换到指定分支
-```c
-cd .repo/manifests                   #来到这个目录
-git branch -a       #查看所有分支
-repo init -b android-12.0.0_r1  #回到工作目录，执行这句话切换到android-12.0.0_r1
-repo sync               #切换完成再次执行同步操作
+```bash
+mkdir ~/bin
+PATH=~/bin:$PATH
 ```
 
-下载好源码开始编译：
+第 2 步，下载 repo
+
+```bash
+curl https://storage.googleapis.com/git-repo-downloads/repo > ~/bin/repo
+chmod a+x ~/bin/repo
 ```
-source build/envsetup.sh #配置环境变量
+
+安装完repo后需要使用`source`指令重新加载linux的配置环境，这里我们简单一些直接重启操作系统就行。
+
+
+
+### Git
+
+#### Git 简介
+
+Git是一个开源的分布式版本控制系统，可以有效、高速地处理从很小到非常大的项目版本管理。也是目前使用范围最广的版本控制系统。
+
+Android 使用 Git 执行本地操作，例如建立本地分支、提交、对比差异、修改。Google 最初决定使用一种分布式修订版本控制系统，经过筛选最后选中了Git。
+
+> 对于分支要求不高的项目会采用SVN或其它在线办公软件管理。例如，在UP的公司，车载项目的文档类资料以前采用SVN进行管理，现在已经统一切换到飞书系统上。
+
+#### 安装 Git
+
+第 1 步，执行安装指令
+
+```
+sudo apt install git
+```
+
+第 2 步，配置 Git 全局环境
+
+```arduino
+git config --global user.name "用户名"
+git config --global user.email "邮箱"
+```
+
+第 3 步， 生成 ssh 秘钥（可选配置）
+
+```
+ssh-keygen
+```
+
+一直按回车，生成的秘钥文件会在 `~/.ssh`目录下载，我们将`~/.ssh`目录下的`id_rsa.pub` 里面的内容复制到仓库管理系统相应的SSH Key中，在后续的代码下载时就不需要再输入用户名和密码。
+
+> 车载项目常见的源码仓库管理系统是Gerrit 和 GItLab。
+
+### 在线阅读、检索AOSP源码
+
+[aospxref.com/](https://link.juejin.cn?target=http%3A%2F%2Faospxref.com%2F) 是一个在线的 AOSP 源码阅读网站，在这个网站上我们可以很轻松，阅读、检索 Android 的源码，而且对于车载 Android 开发而言，阅读源码十分的重要。
+
+### Git
+
+#### Git 简介
+
+Git是一个开源的分布式版本控制系统，可以有效、高速地处理从很小到非常大的项目版本管理。也是目前使用范围最广的版本控制系统。
+
+Android 使用 Git 执行本地操作，例如建立本地分支、提交、对比差异、修改。Google 最初决定使用一种分布式修订版本控制系统，经过筛选最后选中了Git。
+
+> 对于分支要求不高的项目会采用SVN或其它在线办公软件管理。例如，在UP的公司，车载项目的文档类资料以前采用SVN进行管理，现在已经统一切换到飞书系统上。
+
+#### 安装 Git
+
+第 1 步，执行安装指令
+
+```
+sudo apt install git
+```
+
+第 2 步，配置 Git 全局环境
+
+```arduino
+git config --global user.name "用户名"
+git config --global user.email "邮箱"
+```
+
+第 3 步， 生成 ssh 秘钥（可选配置）
+
+```
+ssh-keygen
+```
+
+一直按回车，生成的秘钥文件会在 `~/.ssh`目录下载，我们将`~/.ssh`目录下的`id_rsa.pub` 里面的内容复制到仓库管理系统相应的SSH Key中，在后续的代码下载时就不需要再输入用户名和密码。
+
+> 车载项目常见的源码仓库管理系统是Gerrit 和 GItLab。
+
+### 在线阅读、检索AOSP源码
+
+[aospxref.com/](https://link.juejin.cn?target=http%3A%2F%2Faospxref.com%2F) 是一个在线的 AOSP 源码阅读网站，在这个网站上我们可以很轻松，阅读、检索 Android 的源码，而且对于车载 Android 开发而言，阅读源码十分的重要。
+
+## 下载 AOSP
+
+
+
+1. ### 下载方式
+
+下载 AOSP 有以下两种方式
+
+- 使用初始化源码包
+
+中科大和清华大学提供了AOSP源码的压缩包，现在的包大约有60GB左右，可以使用命令行或迅雷等下载工具下载。
+
+优点：下载速度快，支持断点续传。
+
+缺点：不贴近工作环境，实际项目中不使用这种方式。
+
+清华大学文档：[mirrors.tuna.tsinghua.edu.cn/help/AOSP/](https://link.juejin.cn?target=https%3A%2F%2Fmirrors.tuna.tsinghua.edu.cn%2Fhelp%2FAOSP%2F)
+
+中科大文档：[mirrors.ustc.edu.cn/help/aosp.h…](https://link.juejin.cn?target=https%3A%2F%2Fmirrors.ustc.edu.cn%2Fhelp%2Faosp.html)
+
+- 使用 repo 直接同步源码
+
+使用repo直接同步源码，是Android官方文档中使用的方式。
+
+优点：更贴近工作环境。在实际项目中也是使用这种方式同步Android源码。
+
+缺点：源码太大，外网不稳定、速度很慢，容易同步失败（实际项目中，我们使用公司内网不会存在这个问题）。
+
+官方文档：[source.android.google.cn/docs/setup/…](https://link.juejin.cn?target=https%3A%2F%2Fsource.android.google.cn%2Fdocs%2Fsetup%2Fdownload%2Fdownloading%3Fhl%3Dzh-cn)
+
+由于下载Android源码非常消耗服务器的带宽和I/O，中科大和清华大学的文档中都强烈要求我们使用第一种方式同步源代码。
+
+如果下载Android官方的AOSP的源码，UP建议使用下载压缩包的方式，如果是下载公司项目的Android源码，则只能使用repo同步。
+
+下面我们分别演示这两种下载Android源码的方式：
+
+#### 第 1 种方式，使用Android源码包
+
+**第 1 步，建立工作目录**
+
+开始下载AOSP源码之前，需要在合适的位置创建一个目录用于放置源码，使用如下命令
+
+```bash
+mkdir AOSP
+cd AOSP
+```
+
+**第 2 步，下载AOSP初始化包**
+
+下载AOSP初始化也有两种方式
+
+第一种，是使用CURL命令行工具。个人建议使用这种方式下载，如果中途意外中断，在执行一次同样的CURL指令，即可进行断点续传。
+
+```arduino
+curl -OC - https://mirrors.tuna.tsinghua.edu.cn/aosp-monthly/aosp-latest.tar
+```
+
+第二种，使用下载工具下载源码包。下载工具可以是浏览器，也可以是迅雷等专用下载工具
+
+下载初始化包，可以用任意操作系统，甚至只要你的手机闪存足够大，用手机下载也无所谓。之后可以拷贝到 Linux 电脑中编译。
+
+**第 3 步，解压初始化包**
+
+下载后的初始化包是一个.tar的压缩包，既可以使用命令行解压，也可以用操作系统的图形化工具解压。解压命令如下：
+
+```
+tar xf aosp-latest.tar
+```
+
+由于压缩包非常大，解压需要一定的时间，这一步建议使用图形化工具解压，方便我们查看进度。
+
+解压完成后的初始化包，只保留了`.repo`目录，使用快捷键`Ctrl+H`显示隐藏文件。执行 repo sync 即可拉取Android主干分支的源码。
+
+```bash
+cd aosp
+repo sync 
+# 或 repo sync -l 仅checkout代码
+```
+
+此后，每次只需运行 `repo sync` 即可保持与主分支同步。
+
+不过我们并不需要主干分支的源码，我们需要选择同步指定版本的Android源码，继续如下的操作
+
+**第 4 步，同步指定分支的源码**
+
+首先切换到`.repo/manifests`目录，再使用`git fetch`指令，拉取最新的远程代码库。
+
+```bash
+cd .repo/manifests
+git fetch --all
+git branch -r
+```
+
+使用git branch -r查看目前最新分支，这里我们选择android 13的分支，执行repo指令，将当前源码库从主干分支切换到Android 13的分支上。
+
+```csharp
+repo init -b android-13.0.0_r20
+```
+
+最后，执行repo sync 同步源码，就可以得到完整的Android 13源码了。
+
+```bash
+repo sync
+```
+
+------
+
+#### 第 2 种方式，使用 repo 直接同步源码
+
+**第 1 步，建立工作目录**
+
+同样的，在开始下载AOSP源码之前，需要在合适的位置创建一个目录用于放置源码，使用如下命令：
+
+```bash
+mkdir AOSP
+cd AOSP
+```
+
+**第 2 步，初始化仓库**
+
+使用repo init 指令初始化源码仓库。
+
+```bash
+repo init -u https://mirrors.tuna.tsinghua.edu.cn/git/AOSP/platform/manifest
+```
+
+**第 3 步，同步源码**
+
+执行repo sync 指令同步源码。
+
+```bash
+repo sync
+```
+
+如果提示无法连接到 gerrit.googlesource.com，可以将以下内容配置到系统的环境变量中，然后重启操作系统。
+
+```ini
+ini
+export REPO_URL='https://mirrors.tuna.tsinghua.edu.cn/git/git-repo'
+```
+
+如果需要同步指定的Android版本，只需要在repo init之后加上-b带上分支名称即可。
+
+```bash
+repo init -u https://mirrors.tuna.tsinghua.edu.cn/git/AOSP/platform/manifest -b android-11.0.0.0_r40
+repo sync
+```
+
+有关repo的更多使用方式，可以详细阅读中科大或清华大学的官方文档，这里不再赘述。
+
+------
+
+### Android 源码文件目录结构
+
+- package
+
+应用层（Application）源码。系统应用就在这里了，比如说系统设置，桌面，相机，电话之类的。
+
+- frameworks
+
+系统框架（Framework）层源码。
+
+- hardware
+
+硬件抽象（HAL）层源码。
+
+- out
+
+输出目录。编译以后生成的目录，相关的产出就在这里了
+
+- build
+
+用于构建Android系统的工具。也就是用于编译Android系统的
+
+## 编译 AOSP
+
+1. ### 配置编译环境
+
+编译Android源码会用到很多第三方库，我们需要先将这些库配置好，指令如下
+
+```css
+sudo apt update
+sudo apt install flex bison build-essential zlib1g-dev gcc-multilib g++-multilib libc6-dev-i386 libncurses5 lib32ncurses5-dev x11proto-core-dev libx11-dev lib32z1-dev libgl1-mesa-dev libxml2-utils xsltproc fontconfig -y
+sudo apt install make git-core gnupg zip unzip curl python3 openjdk-11-jdk -y
+sudo apt install python-is-python3
+sudo apt clean && sudo apt autoremove -y
+```
+
+1. ### 编译 Android 镜像
+
+**第 1 步，加载环境变量**
+
+在Android源码根目录执行`source build/envsetup.sh`，该指令会将`lunch`以及其他程序和变量添加到shell环境中。
+
+```bash
+cd aosp
+source build/envsetup.sh
+```
+
+**第 2 步，选择编译的目标**
+
+因为是在电脑上调试编译出的版本，所以这里我们选择 car_x86_64-userdebug。
+
+> 执行lunch指令之前，当前窗口的shell环境必须已经执行过`source build/envsetup.sh`
+
+lunch 打开选择菜单，选择car_x86_64-userdebug也就是 52。
+
+```
 lunch
 67 # 选择67 编译车载系统
 m #m会自动选择适合的线程进行编译 或者make -j4
 emulator # 启动模拟器 使用编译好的系统
 # 或者使用真机 进行刷机
 ```
+
+也可以直接输入`lunch 52`/`lunch car_x86_64-userdebug`跳过列表选择，不同版本的Android源码项目，目标数字对应的目标并不一样，要注意选择。
+
+**第 3 步，执行编译**
+
+make 指令是aosp的编译指令，支持并发编译。可以使用-j指定并发编译的线程数。电脑的CPU核心数越多，可以设定的线程数就越大，编译速度也就越快，一般可以设为CPU核心数*4。如果不指定，构建系统会自动选择当前操作系统最适合的并行线程数。
+
+```go
+make
+```
+
+在调用 make 命令时，如果没有指定任何目标，则将使用默认的名称为“droid”目标，该目标会编译出完整的 Android 系统镜像。
+
+**第 5 步，启动模拟器**
+
+编译的时长取决于电脑的性能，首次编译约需要耗时约2-5个小时，控制台提示 build completed successfully则表示编译成功了。然后执行emulator就可以启动模拟器了。
+
+```
+emulator
+```
+
+等待开机动画播放完毕，看到Launcher界面，就表示编译成功了。如果编译后出现模拟器黑屏无法启动，可以再执行lunch sdk_car_x86_64-userdebug，然后再make一次。
+
 ![image.png](https://cdn.nlark.com/yuque/0/2023/png/375694/1685233854689-3d6e3245-bdb3-4771-b816-7c5e140db31b.png#averageHue=%2306232c&clientId=u6246308f-eb7f-4&from=paste&height=429&id=bAWCl&originHeight=858&originWidth=1394&originalType=binary&ratio=2&rotation=0&showTitle=false&size=186883&status=done&style=none&taskId=u02521b53-4bce-48e3-8b88-529f47a0f64&title=&width=697)
 > 注意这里用的是模拟器，选择编号**67**进行编译
 
@@ -178,68 +428,43 @@ mmma development/tools/idegen
 development/tools/idegen/idegen.sh
 ```
 此时如果直接使用Android studio打开`android.ipr`，会特别慢，因为太多东西了，一直在索引。所以打开之前我们需要编辑一下`android.iml`配置文件。
+
+我们可以使用下面的配置文件替代原始的配置文件，加快导入速度。该配置文件要求Android Studio只引入package模块的源码。如果有需要也可以引入frameworks模块的源码。
+
 ```
-3-1.sudo chmod 777 android.iml  #先给编辑权限
-3-2.删除多余的orderEntry。全部excludeFolder或者多加一个frameworks的吧，都可以，后面可以改。
-    配置大概如下：
 <?xml version="1.0" encoding="UTF-8"?>
-<module relativePaths="true" type="JAVA_MODULE" version="4">
-<component name="FacetManager">
- <facet type="android" name="Android">
-   <configuration />
- </facet>
-</component>
-<component name="NewModuleRootManager" inherit-compiler-output="true">
- <exclude-output />
- <content url="file://$MODULE_DIR$">
-   <sourceFolder url="file://$MODULE_DIR$/frameworks/base" isTestSource="false" />
-   <excludeFolder url="file://$MODULE_DIR$/.repo" />
-   <excludeFolder url="file://$MODULE_DIR$/BUILD" />
-   <excludeFolder url="file://$MODULE_DIR$/art" />
-   <excludeFolder url="file://$MODULE_DIR$/bionic" />
-   <excludeFolder url="file://$MODULE_DIR$/bootable" />
-   <excludeFolder url="file://$MODULE_DIR$/compatibility" />
-   <excludeFolder url="file://$MODULE_DIR$/cts" />
-   <excludeFolder url="file://$MODULE_DIR$/dalvik" />
-   <excludeFolder url="file://$MODULE_DIR$/developers" />
-   <excludeFolder url="file://$MODULE_DIR$/development" />
-   <excludeFolder url="file://$MODULE_DIR$/device" />
-   <excludeFolder url="file://$MODULE_DIR$/external" />
-   <excludeFolder url="file://$MODULE_DIR$/frameworks/av" />
-   <excludeFolder url="file://$MODULE_DIR$/frameworks/base/apct-tests" />
-   <excludeFolder url="file://$MODULE_DIR$/frameworks/base/docs" />
-   <excludeFolder url="file://$MODULE_DIR$/frameworks/compile" />
-   <excludeFolder url="file://$MODULE_DIR$/frameworks/ex" />
-   <excludeFolder url="file://$MODULE_DIR$/frameworks/hardware" />
-   <excludeFolder url="file://$MODULE_DIR$/frameworks/layoutlib" />
-   <excludeFolder url="file://$MODULE_DIR$/frameworks/libs" />
-   <excludeFolder url="file://$MODULE_DIR$/frameworks/minikin" />
-   <excludeFolder url="file://$MODULE_DIR$/frameworks/multidex" />
-   <excludeFolder url="file://$MODULE_DIR$/frameworks/native" />
-   <excludeFolder url="file://$MODULE_DIR$/frameworks/opt" />
-   <excludeFolder url="file://$MODULE_DIR$/frameworks/proto_logging" />
-   <excludeFolder url="file://$MODULE_DIR$/frameworks/rs" />
-   <excludeFolder url="file://$MODULE_DIR$/frameworks/wilhelm" />
-   <excludeFolder url="file://$MODULE_DIR$/hardware" />
-   <excludeFolder url="file://$MODULE_DIR$/kernel" />
-   <excludeFolder url="file://$MODULE_DIR$/libcore" />
-   <excludeFolder url="file://$MODULE_DIR$/libnativehelper" />
-   <excludeFolder url="file://$MODULE_DIR$/out" />
-   <excludeFolder url="file://$MODULE_DIR$/packages" />
-   <excludeFolder url="file://$MODULE_DIR$/pdk" />
-   <excludeFolder url="file://$MODULE_DIR$/platform_testing" />
-   <excludeFolder url="file://$MODULE_DIR$/prebuilt" />
-   <excludeFolder url="file://$MODULE_DIR$/prebuilts" />
-   <excludeFolder url="file://$MODULE_DIR$/sdk" />
-   <excludeFolder url="file://$MODULE_DIR$/system" />
-   <excludeFolder url="file://$MODULE_DIR$/test" />
-   <excludeFolder url="file://$MODULE_DIR$/toolchain" />
-   <excludeFolder url="file://$MODULE_DIR$/tools" />
- </content>
- <orderEntry type="sourceFolder" forTests="false" />
- <orderEntry type="inheritedJdk" />
-</component>
+<module version="4" relativePaths="true" type="JAVA_MODULE">
+  <component name="FacetManager">
+    <facet type="android" name="Android">
+      <configuration />
+    </facet>
+  </component>
+  <component name="ModuleRootManager" />
+    <component name="NewModuleRootManager" inherit-compiler-output="true">
+    <exclude-output />
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/packages" />
+      <excludeFolder url="file://$MODULE_DIR$/frameworks" />
+      <excludeFolder url="file://$MODULE_DIR$/.repo" />
+      <excludeFolder url="file://$MODULE_DIR$/external/bluetooth" />
+      <excludeFolder url="file://$MODULE_DIR$/external/chromium" />
+      <excludeFolder url="file://$MODULE_DIR$/external/icu4c" />
+      <excludeFolder url="file://$MODULE_DIR$/external/webkit" />
+      <excludeFolder url="file://$MODULE_DIR$/frameworks/base/docs" />
+      <excludeFolder url="file://$MODULE_DIR$/out/eclipse" />
+      <excludeFolder url="file://$MODULE_DIR$/out/host" />
+      <excludeFolder url="file://$MODULE_DIR$/out/target/common/docs" />
+      <excludeFolder url="file://$MODULE_DIR$/out/target/common/obj/JAVA_LIBRARIES/android_stubs_current_intermediates" />
+      <excludeFolder url="file://$MODULE_DIR$/out/target/product" />
+      <excludeFolder url="file://$MODULE_DIR$/prebuilt" />
+      <excludeFolder url="file://$MODULE_DIR$/external/emma" />
+      <excludeFolder url="file://$MODULE_DIR$/external/jdiff" />
+    </content>
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="inheritedJdk" />
+  </component>
 </module>
+
 ```
 #### android 系统映射文件说明
 | **img名称** | **作用** |

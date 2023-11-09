@@ -14,17 +14,17 @@
 
   
 
-  
-
 ### Native Binder
 
-- 《系统服务的注册过程》
+- 《前置知识-JNI/C++》
+
+- 《ServiceManager的Binder机制》
 
 - 《系统服务的获取过程》
 
 - 《ServiceManager的启动过程》
 
-- 《ServiceManager的Binder机制》
+- 
 
 
 

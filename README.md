@@ -8,6 +8,20 @@
 >
 > 学习路径参考：[Android Framework 学习路线 @ 阿豪](https://yuandaimaahao.github.io/AndroidFrameworkTutorialPages/000.%20%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF%E4%B8%8E%E6%8C%87%E5%8D%97/Android%20Framework%20%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF.html)
 
+学习Framework 源码的意义：
+
+> - 参考系统应用的实现
+>
+> 车载Android应用开发，主要难点都集中在如何开发Android系统应用上。例如，定制Launcher时，我们首先需要理解原生的Launcher的实现方式，才能游刃有余地定制出符合产品需求的Android桌面。
+>
+> - 了解Android系统的运行原理
+>
+> AOSP包含了完整的Application、Framework、Native、HAL等各各层级的源码，我们在学习时可以修改源码、添加输出日志，再编译运行查看结果，这样可以方便我们直观的理解Android系统的运行机制。
+>
+> - 工作需要
+>
+> 有的公司在开发车载项目时会给开发开通整个源码权限，这样方便开发在本地编译Android源码进行烧机测试，那么就需要我们掌握整个Android源码的编译方式。。
+
 Android Framework 学习路径： 
 
 <img src="./README.assets/Android%20Framework%20%E5%AD%A6%E4%B9%A0%E8%B7%AF%E5%BE%84-1697015695057-6.png" alt="Android Framework 学习路径"  />
