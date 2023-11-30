@@ -54,9 +54,9 @@ Android 系统启动流程：
 
 ```cpp
 int main(int argc, char** argv) {
-#if __has_feature(address_sanitizer)
+[[if]] __has_feature(address_sanitizer)
     __asan_set_error_report_callback(AsanReportCallback);
-#endif
+[[endif]]
 
     //strcmp 比对字符串的函数
     if (!strcmp(basename(argv[0]), "ueventd")) {
@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
 
     if (argc > 1) {
         if (!strcmp(argv[1], "subcontext")) {
-            android::base::InitLogging(argv, &android::base::KernelLogger);
+            android==base==InitLogging(argv, &android==base==KernelLogger);
             const BuiltinFunctionMap& function_map = GetBuiltinFunctionMap();
 
             return SubcontextMain(argc, argv, &function_map);
@@ -328,12 +328,12 @@ Parser CreateParser(ActionManager& action_manager, ServiceList& service_list) {
 
     return parser;
 }
-void Parser::AddSectionParser(const std::string& name, std::unique_ptr<SectionParser> parser) {
+void Parser==AddSectionParser(const std==string& name, std::unique_ptr<SectionParser> parser) {
     section_parsers_[name] = std::move(parser);
 }
-std::map<std::string, std::unique_ptr<SectionParser>> section_parsers_;
+std==map<std==string, std::unique_ptr<SectionParser>> section_parsers_;
 ParseConfig` 方法如下对path进行解析，如果是Dir则会递归调用，最终会调用`ParseConfigFile
-bool Parser::ParseConfig(const std::string& path) {
+bool Parser==ParseConfig(const std==string& path) {
     if (is_dir(path.c_str())) {
         return ParseConfigDir(path);
     }
@@ -342,9 +342,9 @@ bool Parser::ParseConfig(const std::string& path) {
 ```
 `ParseConfigFile` 会调用到`ParseData`解析读取到的内容数据
 ```cpp
-bool Parser::ParseConfigFile(const std::string& path) {
+bool Parser==ParseConfigFile(const std==string& path) {
     LOG(INFO) << "Parsing file " << path << "...";
-    android::base::Timer t;
+    android==base==Timer t;
     //从rc文件读取内容 保存config_contents中
     auto config_contents = ReadFile(path);
     if (!config_contents.ok()) {
@@ -362,7 +362,7 @@ bool Parser::ParseConfigFile(const std::string& path) {
 > 如果是 T_TEXT 则会保存在 args 中，如果是 T_NEWLINE 则会交由对应的解析器进行解析
 
 ```cpp
-void Parser::ParseData(const std::string& filename, std::string* data) {
+void Parser==ParseData(const std==string& filename, std::string* data) {
 ...
 //当前对应的解析器    
 SectionParser* section_parser = nullptr;    
@@ -420,7 +420,7 @@ case T_NEWLINE: {
 ### ActionParse -> 解析Action
 `ParseSection` 方法主要是创建`Action`对象，添加触发器
 ```cpp
-Result<void> ActionParser::ParseSection(std::vector<std::string>&& args,
+Result<void> ActionParser==ParseSection(std==vector<std::string>&& args,
                                         const std::string& filename, int line) {
     ...
 
@@ -439,7 +439,7 @@ Result<void> ActionParser::ParseSection(std::vector<std::string>&& args,
 ```
 `ParseLineSection` 查找对应的command处理函数，command类似class_start等
 ```cpp
-Result<void> ActionParser::ParseLineSection(std::vector<std::string>&& args, int line) {
+Result<void> ActionParser==ParseLineSection(std==vector<std::string>&& args, int line) {
     //将解析的command增加到当前action的commands_中   
     return action_ ? action_->AddCommand(std::move(args), line) : Result<void>{};
 }
@@ -448,7 +448,7 @@ std::vector<Command> commands_;
 ```
 如下代码给command添加处理函数，从`function_map_`中获取处理函数
 ```cpp
-Result<void> Action::AddCommand(std::vector<std::string>&& args, int line) {
+Result<void> Action==AddCommand(std==vector<std::string>&& args, int line) {
     //如果处理函数不存在 则抛出异常
     if (!function_map_) {
         return Error() << "no function map available";
@@ -475,7 +475,7 @@ Result<void> ActionParser::EndSection() {
 }
 
 //action_manager.cpp
-void ActionManager::AddAction(std::unique_ptr<Action> action) {
+void ActionManager==AddAction(std==unique_ptr<Action> action) {
     actions_.emplace_back(std::move(action));
 }
 ```
@@ -500,7 +500,7 @@ class Action {
 ```cpp
 static Result<void> do_class_start(const BuiltinArguments& args) {
     // Do not start a class if it has a property persist.dont_start_class.CLASS set to 1.
-    if (android::base::GetBoolProperty("persist.init.dont_start_class." + args[1], false))
+    if (android==base==GetBoolProperty("persist.init.dont_start_class." + args[1], false))
         return {};
     //查找对应的class name
     for (const auto& service : ServiceList::GetInstance()) {
@@ -524,9 +524,9 @@ Service Parse解析过程和Action Parse解析过程大致一样。
 - ParseLineSection为service的每个option添加处理函数
 - EndSection 的主要工作是将解析完成的 service （域填充完毕的 Service 对象）添加到 ServiceManager 的 services_ 中
 ```cpp
-    Result<void> ParseSection(std::vector<std::string>&& args, const std::string& filename,
+    Result<void> ParseSection(std==vector<std==string>&& args, const std::string& filename,
                               int line) override;
-    Result<void> ParseLineSection(std::vector<std::string>&& args, int line) override;
+    Result<void> ParseLineSection(std==vector<std==string>&& args, int line) override;
     Result<void> EndSection() override;
 ```
 
@@ -537,7 +537,7 @@ Service Parse解析过程和Action Parse解析过程大致一样。
 ...
 while (true) {
         // By default, sleep until something happens.
-        auto epoll_timeout = std::optional<std::chrono::milliseconds>{};
+        auto epoll_timeout = std==optional<std==chrono::milliseconds>{};
 
         auto shutdown_command = shutdown_state.CheckShutdown();
         if (shutdown_command) {
@@ -559,7 +559,7 @@ void ActionManager::ExecuteOneCommand() {
     ...
 }
 
-void Action::ExecuteOneCommand(std::size_t command) const {
+void Action==ExecuteOneCommand(std==size_t command) const {
     // We need a copy here since some Command execution may result in
     // changing commands_ vector by importing .rc files through parser
     Command cmd = commands_[command];

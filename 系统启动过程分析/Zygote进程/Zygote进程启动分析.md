@@ -138,10 +138,10 @@ void AndroidRuntime::start(const char* className, const Vector<String8>& options
             //7. 通过JNI调用ZygoteInit的main方法，这里进入到Java框架层 启动了Zygote进程
             env->CallStaticVoidMethod(startClass, startMeth, strArray);
 
-            #if 0
+            [[if]] 0
             if (env->ExceptionCheck())
                 threadExitUncaughtException(env);
-            #endif
+            [[endif]]
         }
     }
 }

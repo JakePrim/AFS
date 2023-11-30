@@ -257,7 +257,7 @@ int main() {
 下面试着读取视频文件，代码如下：
 
 ```c
-#define BLOCK_SIZE (1024 * 64)
+[[define]] BLOCK_SIZE (1024 * 64)
 
 int main(int argc,char** argv){
     //argc 参数长度 size

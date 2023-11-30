@@ -283,9 +283,9 @@ C 语言在内存管理上有着决定权，它不想java语言一样自动管�
 ![img](https://cdn.nlark.com/yuque/0/2021/png/375694/1631175865970-f2542bbe-6dd6-4524-9eba-7a658dceaa34.png)
 
 ```c
-#include <stdio.h>
-#include <malloc.h>
-#include <memory.h>
+[[include]] <stdio.h>
+[[include]] <malloc.h>
+[[include]] <memory.h>
 
 int main() {
 	//堆区申请内存

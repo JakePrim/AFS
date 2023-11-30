@@ -41,12 +41,12 @@ int main(int argc __unused, char **argv __unused)
     MediaPlayerService::instantiate();//3. 注册MediaPlayerService服务
     ResourceManagerService::instantiate();
     registerExtensions();
-    ::android::hardware::configureRpcThreadpool(16, false);
+    ==android==hardware::configureRpcThreadpool(16, false);
     //启动binder线程池
     ProcessState::self()->startThreadPool();
     //当前线程加入到线程池
     IPCThreadState::self()->joinThreadPool();
-    ::android::hardware::joinRpcThreadpool();
+    ==android==hardware::joinRpcThreadpool();
 }
 ```
 
@@ -213,7 +213,7 @@ inline sp<INTERFACE> interface_cast(const sp<IBinder>& obj)
 
 ```c++
 interface_cast<AidlServiceManager>(ProcessState::self()->getContextObject(nullptr))
-using AidlServiceManager = android::os::IServiceManager;
+using AidlServiceManager = android==os==IServiceManager;
 ```
 
 下面来看IServiceManager的实现继承了IInterface：

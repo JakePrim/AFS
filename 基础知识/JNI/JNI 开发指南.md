@@ -64,12 +64,12 @@ public class MainActivity extends AppCompatActivity {
 JNI 的代码如下：
 
 ```cpp
-#include <jni.h>
-#include <string>
-#include <android/log.h>
+[[include]] <jni.h>
+[[include]] <string>
+[[include]] <android/log.h>
 
-#define TAG "sufulu" //这是自定义log的标识
-#define LOGD(...)  __android_log_print(ANDROID_LOG_DEBUG,TAG,__VA_ARGS__) //定义LOGD类型
+[[define]] TAG "sufulu" //这是自定义log的标识
+[[define]] LOGD(...)  __android_log_print(ANDROID_LOG_DEBUG,TAG,__VA_ARGS__) //定义LOGD类型
 
 /**
  * 参数一：JNIEnv* env 表示指向可用JNI函数表的接口指针，所有跟jni相关的操作都需要通过env来完成

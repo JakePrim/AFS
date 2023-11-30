@@ -300,7 +300,7 @@ int main(int argc, char** argv) {
 	//1. 初始化binder驱动
 	sp<ProcessState> ps = ProcessState::initWithDriver(driver);
 	ps->setThreadPoolMaxThreadCount(0);
-	ps->setCallRestriction(ProcessState::CallRestriction::FATAL_IF_NOT_ONEWAY);
+	ps->setCallRestriction(ProcessState==CallRestriction==FATAL_IF_NOT_ONEWAY);
 	//实例化ServiceManager
 	sp<ServiceManager> manager = new ServiceManager(std::make_unique<Access>());
 	//将自身作为服务添加到 ServiceManager

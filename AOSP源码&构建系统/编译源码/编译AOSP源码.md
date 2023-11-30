@@ -1,51 +1,45 @@
-# 编译AOSP源码
+## AOSP 介绍
+
+> Android 开放系统平台 (AOSP) 是公开发布且可修改的 Android 源代码。任何人都可以下载并修改其设备的 AOSP。AOSP 提供 Android 移动平台的完整且功能完备的实现。
+
+AOSP 全称 Android 开源项目(Android Open Source Project),Android 是一个适用于移动设备的开源操作系统，也是由 Google 主导的对应开源项目。此网站和 Android 开源项目 (AOSP) 代码库可为您提供所需信息和源代码，供您创建定制的 Android OS 版本，将设备和配件移植到 Android 平台，同时确保设备符合兼容性要求，从而让 Android 生态系统维持良好稳健的运行环境，以便更好地服务于数百万用户。文档([Android 开源项目  | Android Open Source Project (google.cn)](https://source.android.google.cn/?hl=zh-cn))
+
+![image-20231109134634113](./%E7%BC%96%E8%AF%91AOSP%E6%BA%90%E7%A0%81.assets/image-20231109134634113.png)
 
 ## 硬件环境
 
-AOSP 的下载、编译理论上支持 Mac和Linux，但是不建议在非 Linux 环境下尝试编译，其中要踩的坑实在太多。
+AOSP 的下载、编译理论上支持 Mac和Linux，但是不建议在非 Linux 环境下尝试编译，坑太多了，建议使用Linux系统进行编译。
 
-下载 Android 12 及以后的版本，需要至少100GB的硬盘空间，编译Android 12 则需要300GB的硬盘空间和16GB以上的内存，低于这个配置在编译时大概率会报错。我的硬件环境如下：Ubuntu 20.0.4版本的系统
+下载 Android 12 及以后的版本，需要至少100GB的硬盘空间，编译Android 12 则需要300GB的硬盘空间和16GB以上的内存，低于这个配置在编译时大概率会报错。
+
+本篇文章使用Android 10的AOSP版本演示
+
+
+建议硬件环境如下：
+
+- Ubuntu 20.0.4版本的系统
+- 内存：32G (建议64G)
+- 硬盘：512G(建议1T)
+- CPU：12核 16线程
+
+如下是我的虚拟机的硬件环境：
 
 ![image-20231103134507171](./%E7%BC%96%E8%AF%91AOSP%E6%BA%90%E7%A0%81.assets/image-20231103134507171.png)
 
-## 源码管理工具
+## Repo源码管理工具
 
 安装完Ubuntu系统后，在下载Android源码之前，要先安装其构建工具 Repo 来初始化源码。Repo是Android用来辅助Git工作的一个工具。(Repo命令的详解在下一篇文章中讲解)
-
 ### Repo
 
 #### Repo 简介
 
 Repo是Google使用python脚本编写的用于调用Git的脚本，主要用来下载、管理Android项目的软件仓库。
-
 Repo不会取代Git，但是它可以让开发者在Android环境中更加轻松的使用Git。
-
 在大多数情况下，确实可以仅使用 Git（不必使用 Repo），或结合使用 Repo 和 Git 命令以组成复杂的命令。不过，使用 Repo 执行基本的跨网络操作可大大简化我们的工作。
 
 #### 安装 Repo
 
 Android源码同时使用git和repo进行管理，repo是基于git的代码管理工具，类似github、gitee，所以需要同时安装git和repo
-
-```
-sudo apt-get update
-sudo apt-get install repo
-```
-
-如果没有~/bin/repo目录，需要先创建一下，安装好后验证是否安装成功
-
-```
-repo verison
-```
-
-如果出现
-
-```
-<repo not installed>
-repo launcher version 2.15
-(from /usr/bin/repo)
-```
-
-说明安装成功了，repo安装好后可以开始下载源码了
 
 第 1 步，创建一个bin目录，并将这个目录添加到系统的环境变量中
 
@@ -57,13 +51,11 @@ PATH=~/bin:$PATH
 第 2 步，下载 repo
 
 ```bash
-curl https://storage.googleapis.com/git-repo-downloads/repo > ~/bin/repo
-chmod a+x ~/bin/repo
+curl https://mirrors.tuna.tsinghua.edu.cn/git/git-repo -o ~/bin/repo
+chmod +x ~/bin/repo
 ```
 
-安装完repo后需要使用`source`指令重新加载linux的配置环境，这里我们简单一些直接重启操作系统就行。
-
-
+安装完repo后需要使用`source`指令重新加载linux的配置环境。
 
 ### Git
 
@@ -72,8 +64,6 @@ chmod a+x ~/bin/repo
 Git是一个开源的分布式版本控制系统，可以有效、高速地处理从很小到非常大的项目版本管理。也是目前使用范围最广的版本控制系统。
 
 Android 使用 Git 执行本地操作，例如建立本地分支、提交、对比差异、修改。Google 最初决定使用一种分布式修订版本控制系统，经过筛选最后选中了Git。
-
-> 对于分支要求不高的项目会采用SVN或其它在线办公软件管理。例如，在UP的公司，车载项目的文档类资料以前采用SVN进行管理，现在已经统一切换到飞书系统上。
 
 #### 安装 Git
 
@@ -98,56 +88,13 @@ ssh-keygen
 
 一直按回车，生成的秘钥文件会在 `~/.ssh`目录下载，我们将`~/.ssh`目录下的`id_rsa.pub` 里面的内容复制到仓库管理系统相应的SSH Key中，在后续的代码下载时就不需要再输入用户名和密码。
 
-> 车载项目常见的源码仓库管理系统是Gerrit 和 GItLab。
-
-### 在线阅读、检索AOSP源码
-
-[aospxref.com/](https://link.juejin.cn?target=http%3A%2F%2Faospxref.com%2F) 是一个在线的 AOSP 源码阅读网站，在这个网站上我们可以很轻松，阅读、检索 Android 的源码，而且对于车载 Android 开发而言，阅读源码十分的重要。
-
-### Git
-
-#### Git 简介
-
-Git是一个开源的分布式版本控制系统，可以有效、高速地处理从很小到非常大的项目版本管理。也是目前使用范围最广的版本控制系统。
-
-Android 使用 Git 执行本地操作，例如建立本地分支、提交、对比差异、修改。Google 最初决定使用一种分布式修订版本控制系统，经过筛选最后选中了Git。
-
-> 对于分支要求不高的项目会采用SVN或其它在线办公软件管理。例如，在UP的公司，车载项目的文档类资料以前采用SVN进行管理，现在已经统一切换到飞书系统上。
-
-#### 安装 Git
-
-第 1 步，执行安装指令
-
-```
-sudo apt install git
-```
-
-第 2 步，配置 Git 全局环境
-
-```arduino
-git config --global user.name "用户名"
-git config --global user.email "邮箱"
-```
-
-第 3 步， 生成 ssh 秘钥（可选配置）
-
-```
-ssh-keygen
-```
-
-一直按回车，生成的秘钥文件会在 `~/.ssh`目录下载，我们将`~/.ssh`目录下的`id_rsa.pub` 里面的内容复制到仓库管理系统相应的SSH Key中，在后续的代码下载时就不需要再输入用户名和密码。
-
-> 车载项目常见的源码仓库管理系统是Gerrit 和 GItLab。
+> 常见的源码仓库管理系统是Gerrit 和 GItLab。
 
 ### 在线阅读、检索AOSP源码
 
 [aospxref.com/](https://link.juejin.cn?target=http%3A%2F%2Faospxref.com%2F) 是一个在线的 AOSP 源码阅读网站，在这个网站上我们可以很轻松，阅读、检索 Android 的源码，而且对于车载 Android 开发而言，阅读源码十分的重要。
 
 ## 下载 AOSP
-
-
-
-1. ### 下载方式
 
 下载 AOSP 有以下两种方式
 
@@ -177,80 +124,7 @@ ssh-keygen
 
 如果下载Android官方的AOSP的源码，UP建议使用下载压缩包的方式，如果是下载公司项目的Android源码，则只能使用repo同步。
 
-下面我们分别演示这两种下载Android源码的方式：
-
-#### 第 1 种方式，使用Android源码包
-
-**第 1 步，建立工作目录**
-
-开始下载AOSP源码之前，需要在合适的位置创建一个目录用于放置源码，使用如下命令
-
-```bash
-mkdir AOSP
-cd AOSP
-```
-
-**第 2 步，下载AOSP初始化包**
-
-下载AOSP初始化也有两种方式
-
-第一种，是使用CURL命令行工具。个人建议使用这种方式下载，如果中途意外中断，在执行一次同样的CURL指令，即可进行断点续传。
-
-```arduino
-curl -OC - https://mirrors.tuna.tsinghua.edu.cn/aosp-monthly/aosp-latest.tar
-```
-
-第二种，使用下载工具下载源码包。下载工具可以是浏览器，也可以是迅雷等专用下载工具
-
-下载初始化包，可以用任意操作系统，甚至只要你的手机闪存足够大，用手机下载也无所谓。之后可以拷贝到 Linux 电脑中编译。
-
-**第 3 步，解压初始化包**
-
-下载后的初始化包是一个.tar的压缩包，既可以使用命令行解压，也可以用操作系统的图形化工具解压。解压命令如下：
-
-```
-tar xf aosp-latest.tar
-```
-
-由于压缩包非常大，解压需要一定的时间，这一步建议使用图形化工具解压，方便我们查看进度。
-
-解压完成后的初始化包，只保留了`.repo`目录，使用快捷键`Ctrl+H`显示隐藏文件。执行 repo sync 即可拉取Android主干分支的源码。
-
-```bash
-cd aosp
-repo sync 
-# 或 repo sync -l 仅checkout代码
-```
-
-此后，每次只需运行 `repo sync` 即可保持与主分支同步。
-
-不过我们并不需要主干分支的源码，我们需要选择同步指定版本的Android源码，继续如下的操作
-
-**第 4 步，同步指定分支的源码**
-
-首先切换到`.repo/manifests`目录，再使用`git fetch`指令，拉取最新的远程代码库。
-
-```bash
-cd .repo/manifests
-git fetch --all
-git branch -r
-```
-
-使用git branch -r查看目前最新分支，这里我们选择android 13的分支，执行repo指令，将当前源码库从主干分支切换到Android 13的分支上。
-
-```csharp
-repo init -b android-13.0.0_r20
-```
-
-最后，执行repo sync 同步源码，就可以得到完整的Android 13源码了。
-
-```bash
-repo sync
-```
-
-------
-
-#### 第 2 种方式，使用 repo 直接同步源码
+下面建议使用repo的方式直接同步源码：
 
 **第 1 步，建立工作目录**
 
@@ -277,17 +151,25 @@ repo init -u https://mirrors.tuna.tsinghua.edu.cn/git/AOSP/platform/manifest
 repo sync
 ```
 
-如果提示无法连接到 gerrit.googlesource.com，可以将以下内容配置到系统的环境变量中，然后重启操作系统。
+repo 的运行过程中会尝试访问官方的 git 源更新自己，如果想使用 tuna 的镜像源进行更新，可以将如下内容复制到你的 ~/.bashrc。
 
 ```ini
-ini
 export REPO_URL='https://mirrors.tuna.tsinghua.edu.cn/git/git-repo'
+PATH=~/bin:$PATH
+```
+
+然后执行命令：
+
+```shell
+source ~/.bashrc
 ```
 
 如果需要同步指定的Android版本，只需要在repo init之后加上-b带上分支名称即可。
 
 ```bash
-repo init -u https://mirrors.tuna.tsinghua.edu.cn/git/AOSP/platform/manifest -b android-11.0.0.0_r40
+#初始化仓库，-b 指示分支，这里使用Android 10
+repo init -u https://mirrors.tuna.tsinghua.edu.cn/git/AOSP/platform/manifest -b android-10.0.0_r41
+#同步远程代码
 repo sync
 ```
 
@@ -319,19 +201,20 @@ repo sync
 
 ## 编译 AOSP
 
-1. ### 配置编译环境
+### 配置编译环境
 
-编译Android源码会用到很多第三方库，我们需要先将这些库配置好，指令如下
+编译Android源码会用到很多第三方库，我们需要先将这些库配置好，指令如下：
 
-```css
+> 需要注意如果你编译的是Android12 以下需要使用python2,如果编译Android 12及以上则需要使用pyton3
+
+```bash
 sudo apt update
-sudo apt install flex bison build-essential zlib1g-dev gcc-multilib g++-multilib libc6-dev-i386 libncurses5 lib32ncurses5-dev x11proto-core-dev libx11-dev lib32z1-dev libgl1-mesa-dev libxml2-utils xsltproc fontconfig -y
-sudo apt install make git-core gnupg zip unzip curl python3 openjdk-11-jdk -y
+sudo apt-get install git-core gnupg flex bison build-essential zip curl zlib1g-dev gcc-multilib g++-multilib libc6-dev-i386 libncurses5 lib32ncurses5-dev x11proto-core-dev libx11-dev lib32z1-dev libgl1-mesa-dev libxml2-utils xsltproc unzip fontconfig python3
 sudo apt install python-is-python3
 sudo apt clean && sudo apt autoremove -y
 ```
 
-1. ### 编译 Android 镜像
+### 编译 Android 镜像
 
 **第 1 步，加载环境变量**
 
@@ -344,28 +227,25 @@ source build/envsetup.sh
 
 **第 2 步，选择编译的目标**
 
-因为是在电脑上调试编译出的版本，所以这里我们选择 car_x86_64-userdebug。
+这里选择 `26.asop_x86_64-eng` 进行编译，编译的是手机的模式
+```shell
+lunch
+26 # 选择手机系统
+m # 自动选择适合的线程进行编译
+emulator # 启动模拟器使用编译好的系统
+```
+
+如果要编译车载系统，这里我们选择 `car_x86_64-userdebug`。
 
 > 执行lunch指令之前，当前窗口的shell环境必须已经执行过`source build/envsetup.sh`
 
-lunch 打开选择菜单，选择car_x86_64-userdebug也就是 52。
-
-```
-lunch
-67 # 选择67 编译车载系统
-m #m会自动选择适合的线程进行编译 或者make -j4
-emulator # 启动模拟器 使用编译好的系统
-# 或者使用真机 进行刷机
-```
-
-也可以直接输入`lunch 52`/`lunch car_x86_64-userdebug`跳过列表选择，不同版本的Android源码项目，目标数字对应的目标并不一样，要注意选择。
-
 **第 3 步，执行编译**
 
-make 指令是aosp的编译指令，支持并发编译。可以使用-j指定并发编译的线程数。电脑的CPU核心数越多，可以设定的线程数就越大，编译速度也就越快，一般可以设为CPU核心数*4。如果不指定，构建系统会自动选择当前操作系统最适合的并行线程数。
+make 指令是aosp的编译指令，支持并发编译。可以使用-j指定并发编译的线程数。电脑的CPU核心数越多，可以设定的线程数就越大，编译速度也就越快，一般可以设为CPU线程数。如果不指定，构建系统会自动选择当前操作系统最适合的并行线程数。
 
-```go
-make
+```shell
+make -j16 # 指定线程数
+m #自动匹配线程数
 ```
 
 在调用 make 命令时，如果没有指定任何目标，则将使用默认的名称为“droid”目标，该目标会编译出完整的 Android 系统镜像。
@@ -381,21 +261,35 @@ emulator
 等待开机动画播放完毕，看到Launcher界面，就表示编译成功了。如果编译后出现模拟器黑屏无法启动，可以再执行lunch sdk_car_x86_64-userdebug，然后再make一次。
 
 ![image.png](https://cdn.nlark.com/yuque/0/2023/png/375694/1685233854689-3d6e3245-bdb3-4771-b816-7c5e140db31b.png#averageHue=%2306232c&clientId=u6246308f-eb7f-4&from=paste&height=429&id=bAWCl&originHeight=858&originWidth=1394&originalType=binary&ratio=2&rotation=0&showTitle=false&size=186883&status=done&style=none&taskId=u02521b53-4bce-48e3-8b88-529f47a0f64&title=&width=697)
-> 注意这里用的是模拟器，选择编号**67**进行编译
+> 注意这里用的是模拟器，选择编号**26**进行编译
 
 - user: 限制所有权限，发布版
 - userdebug: 允许root
 - eng: 开发版，开放所有权限
 
-![image.png](https://cdn.nlark.com/yuque/0/2023/png/375694/1685234036991-c0380fc8-9ce7-4c38-a339-e4e0448386ee.png#averageHue=%2307232c&clientId=u6246308f-eb7f-4&from=paste&height=419&id=KZvc3&originHeight=838&originWidth=1672&originalType=binary&ratio=2&rotation=0&showTitle=false&size=160146&status=done&style=none&taskId=u1d9ade59-e008-45b9-b8c4-2c447a6cd07&title=&width=836)
-修改Android源码后如何进行编译？进入到指定的目录使用mm或者mmm指定修改的目录进行编译
+下次再启动虚拟机需要执行的命令如下：
+
+```shell
+source build/envsetup.sh
+lunch 26
+emulator
 ```
+
+模拟器启动，则说明AOSP编译成功：
+
+![image-20231115220137381](./assets/image-20231115220137381.png)
+
+### AOSP 中的单编和整编
+
+修改Android源码后如何进行编译？进入到指定的目录使用`mm`或者`mmm`指定修改的目录进行编译
+
+```shell
 mm # 编译当前模块
 mmm # 编译指定模块 mmm packeage/apps/Luncher3
 ```
-##### 编译android系统源代码特定模块
-```c
-m：  编译所有的模块
+
+```shell
+m：  编译所有的模块 整编
 mm： 编译当前目录下的模块，当前目录下要有Android.mk文件
 mmm：编译指定路径下的模块，指定路径下要有Android.mk文件
 
@@ -409,8 +303,8 @@ mmm：编译指定路径下的模块，指定路径下要有Android.mk文件
 3.执行mm
 最后使用make snod重新生成sysem.img步骤：
 1.source build/envsetup.sh
-2.lunch 然后选择2   #选择2是选择和编译整个系统时的选择一致。
-3.make snod           #先执行lunch，不然make snod报错build_image.py - ERROR。
+2.lunch 然后选择2   [[选择2是选择和编译整个系统时的选择一致。]]
+3.make snod           [[先执行lunch，不然make]] snod报错build_image.py - ERROR。
 ```
 
 ##### 清理编译中间产物，以便重新开始编译
@@ -431,7 +325,7 @@ development/tools/idegen/idegen.sh
 
 我们可以使用下面的配置文件替代原始的配置文件，加快导入速度。该配置文件要求Android Studio只引入package模块的源码。如果有需要也可以引入frameworks模块的源码。
 
-```
+```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <module version="4" relativePaths="true" type="JAVA_MODULE">
   <component name="FacetManager">
@@ -471,170 +365,151 @@ development/tools/idegen/idegen.sh
 | --- | --- |
 | boot.img | 内核引导启动有关镜像 |
 | ramdisk.img | 文件系统有关镜像，包含android系统文件根目录等 |
-| system.img | android系统核心镜像，包含framework、系统app等，挂载在/system下 |
-| userdata.img | 应用程序数据镜像，挂载在/data下 |
+| system.img |android系统核心镜像，包含framework、系统app等，挂载在/system下|
+| userdata.img |应用程序数据镜像，挂载在/data下|
 | cache.img | 临时数据存放镜像 |
 
 ### 编译过程遇到的问题
-####  For the sprintf deprecation issue
-[Error in compiling android (12) aosp on mac 13.3 m1 max](https://stackoverflow.com/questions/76129351/error-in-compiling-android-12-aosp-on-mac-13-3-m1-max)
-Update: For the sprintf deprecation issue, you can actually fix it by replacing with snprintf accordingly, since on Xcode 14+, sprintf is deprecated on mac. There are a few repos which require this patching.
-#### error: 'TARGET_OS_SIMULATOR' is not defined
-[ICU-21513 check if TARGET_OS_SIMULATOR has been defined by mojca · Pull Request #1608 · unicode-org/icu](https://github.com/unicode-org/icu/pull/1608)
-external/icu/icu4c/source/common/putil.cpp:1364:35: error: 'TARGET_OS_SIMULATOR' is not defined, evaluates to 0 [-Werror,-Wundef-prefix=TARGET_OS_]
-#if U_PLATFORM_IS_DARWIN_BASED && TARGET_OS_SIMULATOR
-#### failed to build some targets (05:22 (mm:ss)) ####
-```cpp
-#if U_PLATFORM_IS_DARWIN_BASED && defined(TARGET_OS_SIMULATOR) && TARGET_OS_SIMULATOR
-# if !defined(ICU_DATA_DIR_PREFIX_ENV_VAR)
-#  define ICU_DATA_DIR_PREFIX_ENV_VAR "IPHONE_SIMULATOR_ROOT"
-# endif
-#endif
-```
-#### too many file 的问题
-[https://www.jianshu.com/p/d6f7d1557f20](https://www.jianshu.com/p/d6f7d1557f20)
-[https://www.readfog.com/a/1663989524653510656](https://www.readfog.com/a/1663989524653510656)
-macOS 解決 too many open files
-報錯 too many open files 大致有以下三種可能 [[1]](https://bbs.huaweicloud.com/blogs/108323) [[2]](https://www.launchd.info/) [[3]](https://en.wikipedia.org/wiki/Launchd#launchctl)：
 
-1. 操作系統打開的文件句柄數過多（內核的限制）
-2. launchd 對進程進行了限制
-3. shell 對進程進行了限制
+#### FAILED: out/target/product/generic_x86_64/system-qemu.img
 
-內核的限制
-整個操作系統可以打開的文件數受內核參數影響，可以通過以下命令查看
-```
-$ sysctl kern.maxfiles
-$ sysctl kern.maxfilesperproc
-```
-在我電腦上輸出如下
-```
-kern.maxfiles: 49152
-kern.maxfilesperproc: 42576
-```
-好像已經很大了。
-如果需要臨時修改的話，運行如下命令
-```
-$ sudo sysctl -w kern.maxfiles=20480 # 或其他你選擇的數字
-$ sudo sysctl -w kern.maxfilesperproc=18000 # 或其他你選擇的數字
-```
-永久修改，需要在 /etc/sysctl.conf 里加上類似的下述內容
-```
-kern.maxfiles=20480
-kern.maxfilesperproc=18000
-```
-這個文件可能需要自行創建
-launchd 對進程的限制
-獲取當前的限制：
-```
-$ launchctl limit maxfiles
-```
-輸出類似這樣：
-```
-maxfiles    256            unlimited
-```
-其中前一個是軟限制，後一個是硬件限制。
-臨時修改：
-```
-$ sudo launchctl limit maxfiles 65536 200000
-```
-系統範圍內修改則需要在文件夾 /Library/LaunchDaemons 下創建一個 plist 文件 limit.maxfiles.plist：
-```
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-  <dict>
-    <key>Label</key>
-    <string>limit.maxfiles</string>
-    <key>ProgramArguments</key>
-    <array>
-      <string>launchctl</string>
-      <string>limit</string>
-      <string>maxfiles</string>
-      <string>65536</string>
-      <string>200000</string>
-    </array>
-    <key>RunAtLoad</key>
-    <true/>
-    <key>ServiceIPC</key>
-    <false/>
-  </dict>
-</plist>
-```
-修改文件權限
-```
-$ sudo chown root:wheel /Library/LaunchDaemons/limit.maxfiles.plist
-$ sudo chmod 644 /Library/LaunchDaemons/limit.maxfiles.plist
-```
-載入新設定
-```
-$ sudo launchctl load -w /Library/LaunchDaemons/limit.maxfiles.plist
-```
-shell 的限制
-通過下述命令查看現有限制
-```
-$ ulimit -a
-```
-得到如下輸出
-```
-...
--n: file descriptors                256
-...
-```
-通過 ulimit -S -n 4096 來修改。如果需要保持修改，可以將這一句命令加入你的 .bash_profile 或 .zshrc 等。
-一般來說，修改了上述三個限制，重啓一下，這個問題就可以解決了。
-在實際操作中，我修改到第二步重啓，第三個就自動修改了。
+如果编译的是Android 10或以下版本使用的python2,需要注意编译环境的python版本
+需要转到文件`/android/device/generic/goldfish/tools/mk_combined_img.py`并将第一行：`#!/usr/bin/python`更改为`#!/usr/bin/python2`
+应该可以正常编译了.
 
-#### error: 'sprintf' is deprecated 的问题
-看起来是 sprintf 方法已经废弃了，建议使用 snprintf 替代。嗯，🤔，作为新手还是先不改代码了，先查一下这个问题怎么绕过。
-在项目仓库找到一个 [Issus #75](https://github.com/rockchip-linux/rkdeveloptool/issues/75)，移除 Makefile.am 里的 -Werror，然后重新执行：
+**1.以 root 身份登录，首先罗列出所有可用的python 替代版本信息**
 
-```bash
-autoreconf -i
-./configure
-make
-```
-或者使用SDK 10.14 或 10.15  11.3 下载地址：
-[https://github.com/phracker/MacOSX-SDKs/releases/tag/11.3](https://github.com/phracker/MacOSX-SDKs/releases/tag/11.3)
-解压缩放到：目录中：
-```bash
-cd /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/
-
+```text
+update-alternatives --list python 
 ```
 
-将SDK的版本添加 11.3的SDK 版本 不要添加12以上的SDK 否则编译报错
+这一步可能会**报错**update-alternatives: error: no alternatives for python
 
-1. 错误1 - LibreSSL SSL_connect: SSL_ERROR_SYSCALL in connection
-```c
-输入以下命令，移除代理，再执行命令
-git config --global --unset http.proxy
+**2.如果出现以上所示的错误信息，则表示 Python 的替代版本尚未被update-alternatives 命令识别。想解决这个问题，我们需要更新一下替代列表，将python2.7 和 python3.6 放入其中。**
+
+```text
+update-alternatives --install /usr/bin/python python /usr/bin/python2.7 1  
+update-alternatives --install /usr/bin/python python /usr/bin/python3.6 2 
 ```
 
-2. 错误2 - 找不到高通芯片有关的符号连接
-```c
-internal error: could not open symlink hardware/qcom/sm8150p/Android.bp; its target (gps/os_pickup.bp) cannot be opened
-internal error: could not open symlink hardware/qcom/sm7250/Android.bp; its target (gps/os_pickup.bp) cannot be opened
-internal error: could not open symlink hardware/qcom/sm7150/Android.bp; its target (gps/os_pickup.bp) cannot be opened
-internal error: could not open symlink hardware/qcom/sm8150/Android.bp; its target (data/ipacfg-mgr/os_pickup.bp) cannot be opened
-```
-解决方法：
+最后的1、2、3...代表序号，后面会有用  
 
-3. 错误3 - 没有对应支持的sdk版本
-```c
-internal error: Could not find a supported mac sdk: ["10.10" "10.11" "10.12" "10.13" "10.14"]
-```
-解决方法：
+**3.再次列出可用的 Python 替代版本**
 
-4. 错误4 - 找不到高通芯片有关的文件或目录
-```c
-FAILED: 
-hardware/qcom/sdm845/Android.mk:1: error: hardware/qcom/sm7150/Android.mk: No such file or directory
+```text
+update-alternatives --list python 
 ```
-解决方法：
 
-5. 错误5 - 出现这个原因可能和sdk版本有关
-```c
-system/core/base/cmsg.cpp:78:21: error: use of undeclared identifier 'PAGE_SIZE'
-if (cmsg_space >= PAGE_SIZE) {
+**4.我们就可以使用下方的命令随时在列出的 Python 替代版本中任意切换了**
+
+```text
+update-alternatives --config python 
 ```
-解决方法：
+
+![](https://pic3.zhimg.com/80/v2-480ef92cbcdfaa9ee921265b67d965e6_1440w.webp)
+
+输入数字,选择版本.
+
+#### 启动模拟器遇到的问题
+
+```
+emulator
+```
+KVM错误
+
+emulator: ERROR: x86 emulation currently requires hardware acceleration!
+Please ensure KVM is properly installed and usable.
+
+CPU acceleration status: KVM is not installed on this machine (/dev/kvm is missing).
+
+```
+egrep -c '(vmx|svm)' /proc/cpuinfo
+```
+先使用该指令查看是否支持虚拟化，如果不支持的话在虚拟机的CPU选项中打开即可。
+
+```
+sudo apt-get install qemu-kvm libvirt-bin ubuntu-vm-builder bridge-utils
+sudo adduser `id -un` libvirtd
+sudo adduser `id -un` kvm
+```
+
+[[检查是否安装成功]]
+sudo kvm-ok
+
+模拟器黑屏
+
+```
+emulator -partition-size 4096 -kernel ./prebuilts/qemu-kernel/x86/4.9/kernel-qemu2
+```
+通过使用kernel-qemu-armv7内核 解决模拟器等待黑屏问题.而-partition-size 4096则是解决警告: system partion siez adjusted to match image file (3083 MB > 800 MB)
+
+模拟器启动后崩溃
+VMware: vmw_ioctl_command error Invalid argument.
+Aborted (core dumped)
+
+关闭硬件加速
+
+```
+export SVGA_VGPU10=0
+echo "export SVGA_VGPU10=0" >> ~/.bashrc
+source ~/.bashrc
+```
+
+### 体验Framework开发，去掉Launcher中的Google搜索栏
+
+Google搜索栏在中国是没有办法使用的，那么在中国销售的产品必定是要去掉
+
+1. 修改文件`packages/apps/Launcher3/res/layout/search_container_workspace.xml`将fragment注释掉
+
+```xml
+<com.android.launcher3.qsb.QsbContainerView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:id="@id/search_container_workspace"
+        android:padding="0dp" >
+
+    <!-- <fragment
+        android:name="com.android.launcher3.qsb.QsbContainerView$QsbFragment"
+        android:layout_width="match_parent"
+        android:tag="qsb_view"
+        android:layout_height="match_parent"/> -->
+</com.android.launcher3.qsb.QsbContainerView>
+```
+
+2. 修改文件`packages/apps/Launcher3/src/com/android/launcher3/Workspace.java` 搜索布局文件的名字`search_container_workspace` 注释掉 最后几行代码即可
+
+```java
+   public void bindAndInitFirstWorkspaceScreen(View qsb) {
+        if (!FeatureFlags.QSB_ON_FIRST_SCREEN) {
+            return;
+        }
+        // Add the first page
+        CellLayout firstPage = insertNewWorkspaceScreen(Workspace.FIRST_SCREEN_ID, 0);
+        // Always add a QSB on the first screen.
+        if (qsb == null) {
+            // In transposed layout, we add the QSB in the Grid. As workspace does not touch the
+            // edges, we do not need a full width QSB.
+            qsb = LayoutInflater.from(getContext())
+                    .inflate(R.layout.search_container_workspace,firstPage, false);
+        }
+
+        // CellLayout.LayoutParams lp = new CellLayout.LayoutParams(0, 0, firstPage.getCountX(), 1);
+        // lp.canReorder = false;
+        // if (!firstPage.addViewToCellLayout(qsb, 0, R.id.search_container_workspace, lp, true)) {
+        //     Log.e(TAG, "Failed to add to item at (0, 0) to CellLayout");
+        // }
+    }
+```
+
+3. 重新编译源码，启动模拟器
+
+```
+m
+emulator
+```
+
+启动模拟器后可以看到搜索栏没有了….
+
+![image-20231115220720735](./assets/image-20231115220720735.png)

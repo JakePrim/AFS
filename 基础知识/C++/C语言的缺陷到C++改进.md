@@ -87,7 +87,7 @@ C++是如何改进这个问题呢？
 > C++的解决方案：STL容器及引用，实现底层包装，保证效率的同时，保证简单和安全
 
 ```cpp
-#include <vector>
+[[include]] <vector>
 vector<int> vt{10,20,30,40,50,60,70,80,90,100};
 cout << average3(vt) << endl;
 ```

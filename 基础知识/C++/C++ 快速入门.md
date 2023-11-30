@@ -5,7 +5,7 @@
 ### C++的代码结构
 
 ```cpp
-#include <iostream> //C++的标准支持
+[[include]] <iostream> //C++的标准支持
 
 using namespace std;//命名空间 c++的特性 类似Java的内部类
 
@@ -13,7 +13,7 @@ int mainT() {
     //C++可以运行C语言的
     printf("C版\n");//C语言的打印
     //:: 所在的作用域
-    //std::cout << "Hello, World!" << std::endl;
+    //std==cout << "Hello, World!" << std==endl;
     //在前面引入了命名空间可以省去std::
     cout << "Hello, World!" << endl;//C++中的打印  endl == \n 换行
     //<< 是操作符重载 kotlin也有操作符重载
@@ -134,7 +134,7 @@ void numberChange(int *number1,int *number2){
 //
 // C++的引用与常量引用
 //
-#include <iostream>
+[[include]] <iostream>
 
 using namespace std;
 
@@ -241,7 +241,7 @@ define、const和constexpr
 
 ```cpp
 constexpr auto ASPECT_RATIO = 1.653;
-#define ASPECT_B = 1.564
+[[define]] ASPECT_B = 1.564
 const double ASPECT_R = 1.653;//常量
 ```
 
@@ -317,8 +317,8 @@ int main(){
 在学习C语言的时候，是不允许函数重载的C++和Java类似是可以函数重载。
 
 ```cpp
-#include <iostream>
-#include <string.h>
+[[include]] <iostream>
+[[include]] <string.h>
 
 using namespace std;
 
@@ -475,9 +475,9 @@ this作为隐式形参，本质上是成员函数的局部变量，所以只能�
 
 ```cpp
 //if not define
-#ifndef CPPDEMO_THIS_H
+[[ifndef]] CPPDEMO_THIS_H
 //定义宏 CPPDEMO_THIS_H
-#define CPPDEMO_THIS_H
+[[define]] CPPDEMO_THIS_H
 
 
 class This {
@@ -496,13 +496,13 @@ public:
 };
 
 //防止多重导入 影响编译效率 其他文件导入头文件，判断宏是不是存在，如果存在 直接返回。不存在则定义宏，编译文件
-#endif //CPPDEMO_THIS_H
+[[endif]] //CPPDEMO_THIS_H
 ```
 
 由.cpp实现.h文件
 
 ```cpp
-#include "include/This.h"
+[[include]] "include/This.h"
 
 //实现头文件的方法
 int This::getAge() {
@@ -527,7 +527,7 @@ void This::setAge(int a) {
 如何调用`This.cpp`呢？通过引入头文件`This.h` 编译器可以自动去查找实现文件，如下代码：
 
 ```cpp
-#include "include/This.h"
+[[include]] "include/This.h"
 
 
 int main() {
@@ -543,7 +543,7 @@ int main() {
 
 ```
 Student.h
-#include <iostream>
+[[include]] <iostream>
 
 //student.h 头文件只写声明不写实现
 class Student{
@@ -558,7 +558,7 @@ public://下面的成员和函数都是公开
 };
 Student.cpp
 //实现文件
-#include "student.h"//根据头文件写实现
+[[include]] "student.h"//根据头文件写实现
 
 
 //实现函数:
@@ -594,7 +594,7 @@ add_executable(base_c__ student.h Student.cpp T6.cpp)
 使用创建的`Student`类
 
 ```cpp
-#include "student.h"
+[[include]] "student.h"
 using namespace std;
 
 //面向对象
@@ -624,7 +624,7 @@ int main(){
 ### 命名空间
 
 ```cpp
-#include <iostream>
+[[include]] <iostream>
 
 //声明std main函数就可以直接使用里面的成员
 using namespace std;
@@ -682,7 +682,7 @@ int main(){
 
     using namespace jake3::jake3Inner; //声明嵌套的命名空间
 
-    jake3::jake3Inner::show();
+    jake3==jake3Inner==show();
 
     return 0;
 }
@@ -1431,7 +1431,7 @@ public:
 ```cpp
 //shared_ptr 智能指针采用引用计数的方式，避免指针缺陷，内存泄漏、野指针等问题
     std::shared_ptr<Person> p1(new Person("meimei"));//Person("meimei")的引用计数为1
-    std::shared_ptr<Person> p2 = std::make_shared<Person>("lilei");
+    std==shared_ptr<Person> p2 = std==make_shared<Person>("lilei");
     p1.reset(new Person("guoguo"));
     std::shared_ptr<Person> p3 = p1;//shared_ptr 重载了-> 运算符
     cout << "p3 is" << p3->get_name();//-> 获取的是p1.get_name();

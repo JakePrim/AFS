@@ -1,5 +1,3 @@
-# bindService 如何跨进程将binder传递过来
-
 > bindService的过程其实就是Activity和Service跨进程通信的过程，这是理解Binder的里程碑式的阶段，如果你明白了《Binder通信机制》和《AIDL的跨进程通信原理》以及《bindService》，对于Java层的Binder将彻底掌握本质。
 
 通过前几篇文章，可以清楚的知道Client端可以通过`ServiceManager`获取到Server的binder，然后进行通信，那么在上一篇文章中的AIDL跨进程通信原理，**Client端是通过ServiceManager拿到的binder吗？**显然不是因为Server端的binder并没有注册到`ServiceManager`中，不能直接通信这里涉及到权限管理问题需要通过`AMS`来完成。
@@ -235,3 +233,4 @@ public void doConnected(ComponentName name, IBinder service, boolean dead) {
 8. AMS调用Client端`InnerConnection.connected`跨进程通信最终将Server端的`IBinder`传递到`onServiceConnected()`
 
 ![image-20231024132228895](./bindService%E5%A6%82%E4%BD%95%E8%B7%A8%E8%BF%9B%E7%A8%8B%E4%BC%A0%E9%80%92binder.assets/image-20231024132228895.png)
+

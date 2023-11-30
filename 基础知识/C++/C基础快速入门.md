@@ -3,7 +3,7 @@
 ### 认识C文件的代码结构
 
 ```c
-#include <stdio.h>
+[[include]] <stdio.h>
 //声明文件 .h .hpp
 //<> 表示寻找系统的资源
 //"" 表示寻找开发者定义的声明文件
@@ -25,7 +25,7 @@ int mainT1() { //函数的入口
 // Created by JakePrim on 2021/4/8.
 // 基本数据类型
 //
-#include <stdio.h>
+[[include]] <stdio.h>
 
 int mainT2() {
     int i = 100;
@@ -57,7 +57,7 @@ int mainT2() {
 //
 // Created by JakePrim on 2021/4/8.
 //
-#include <stdio.h>
+[[include]] <stdio.h>
 
 //基本类型占用的字节数 sizeof 判断占用的字节数
 int mainT3() {
@@ -83,7 +83,7 @@ int mainT3() {
 //
 // Created by JakePrim on 2021/4/8.
 //
-#include <stdio.h> //stdio 标准库
+[[include]] <stdio.h> //stdio 标准库
 
 // C 万物皆指针
 // Linux 万物皆文件
@@ -145,7 +145,7 @@ int mainT4() {
 //
 // Created by JakePrim on 2021/4/9.
 //
-#include <stdio.h>
+[[include]] <stdio.h>
 
 //函数 在C语言中函数必须放在main函数的前面
 //void change(){
@@ -200,7 +200,7 @@ void change2(int *i) {
 //
 // Created by JakePrim on 2021/4/9.
 //
-#include <stdio.h>
+[[include]] <stdio.h>
 
 //多级指针
 int mainT6() {
@@ -230,7 +230,7 @@ int mainT6() {
 //
 // Created by JakePrim on 2021/4/9.
 //
-#include <stdio.h>
+[[include]] <stdio.h>
 
 //数组与指针
 int mainT7() {
@@ -273,7 +273,7 @@ int mainT7() {
 //
 // Created by JakePrim on 2021/4/10.
 //
-#include <stdio.h>
+[[include]] <stdio.h>
 
 int mainT8() {
     int arr[4];
@@ -304,7 +304,7 @@ int mainT8() {
 // Created by JakePrim on 2021/4/10.
 //
 
-#include <stdio.h>
+[[include]] <stdio.h>
 
 void add(int num1, int num2) {
     printf("num1 + num2 = %d\n", (num1 + num2));
@@ -360,10 +360,10 @@ int mainT9() {
 //
 // Created by JakePrim on 2021/4/11.
 //
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-#include <string.h>
+[[include]] <stdio.h>
+[[include]] <stdlib.h>
+[[include]] <time.h>
+[[include]] <string.h>
 
 //C函数的使用
 int mainT10() {
@@ -390,8 +390,8 @@ int mainT10() {
 ```c
 // 动态开辟: malloc 在堆区开辟 内存空间 动态范畴
 
-#include <stdio.h>
-#include <stdlib.h>
+[[include]] <stdio.h>
+[[include]] <stdlib.h>
 
 
 //C 语言在开发中不能出现野指针和悬空指针
@@ -648,10 +648,10 @@ int mainT3(){
 - 结构体指针
 
 ```c
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <malloc.h>
+[[include]] <stdio.h>
+[[include]] <string.h>
+[[include]] <stdlib.h>
+[[include]] <malloc.h>
 struct Cat{
     char name[10];
     int age;
@@ -687,9 +687,9 @@ int mainT4(){
 - 结构体数组
 
 ```c
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+[[include]] <stdio.h>
+[[include]] <stdlib.h>
+[[include]] <string.h>
 struct Cat3{
     char name[10];
     int age;
@@ -740,8 +740,8 @@ int mainT5(){
 - typedef 定义结构体类型 抹平不同工具平台的差异化
 
 ```c
-#include <stdio.h>
-#include <stdlib.h>
+[[include]] <stdio.h>
+[[include]] <stdlib.h>
 
 //在学习结构体的时候会发现在VS 和 Clion平台的写法不一致那么如何避免这种问题呢？
 //定义结构体类型
@@ -786,7 +786,7 @@ int mainT6(){
 ### 枚举
 
 ```c
-#include <stdio.h>
+[[include]] <stdio.h>
 //枚举 int类型的
 enum CommonType{
     TEXT = 10,//不给值默认是从0开始
@@ -828,9 +828,9 @@ int main(){
 - 文件读取操作
 
 ```c
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+[[include]] <stdio.h>
+[[include]] <stdlib.h>
+[[include]] <string.h>
 int main(){
     //文件操作
     //参数一：_Filename 文件的来源
@@ -876,9 +876,9 @@ int main(){
 - 文件复制操作
 
 ```c
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+[[include]] <stdio.h>
+[[include]] <stdlib.h>
+[[include]] <string.h>
 
 //文件的复制 二进制文件来复制
 int main(){
@@ -928,9 +928,9 @@ int main(){
 - 文件加密及解密
 
 ```c
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+[[include]] <stdio.h>
+[[include]] <stdlib.h>
+[[include]] <string.h>
 
 //使用密钥加密
 int main(){
@@ -964,9 +964,9 @@ int main(){
 }
 
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+[[include]] <stdio.h>
+[[include]] <stdlib.h>
+[[include]] <string.h>
 
 //解密文件
 int main(){
